@@ -5,20 +5,16 @@ import java.util.*;
 
 public class Cache<K,V> extends LinkedHashMap<K,V> {
 
-    private boolean isEvict = false;
-    private int MAX_ENTRIES = 5;
+    private int MAX_ENTRIES;
     public static final Random generator = new Random();
-    private String evictionPolicy;
+    private Optional<String> evictionPolicy;
+    public enum EvictionPolicyENUM {LRU, MRU}
 
-    enum EvictionPolicyENUM {
-        LRU, MRU
-    }
-
-    public String getEvictionPolicy() {
+    public Optional<String> getEvictionPolicy() {
         return evictionPolicy;
     }
 
-    public void setEvictionPolicy(String evictionPolicy) {
+    public void setEvictionPolicy(Optional<String> evictionPolicy) {
         this.evictionPolicy = evictionPolicy;
     }
 
@@ -33,25 +29,28 @@ public class Cache<K,V> extends LinkedHashMap<K,V> {
     protected boolean removeEldestEntry(Map.Entry eldest) {
         int cap = this.size();
         if(size() > MAX_ENTRIES) {
-            remove(evict());
+            remove(evictPolicy());
         }
         return false;
     }
 
     /**
-     * return a key to evict from the cache
+     * return a key to evictPolicy from the cache
      * @return K
      */
-    public K evict() {
+    public K evictPolicy()  {
         K[] keys = (K[]) this.keySet().toArray();
         int offset = keys.length/2;
-        if(evictionPolicy.equals(EvictionPolicyENUM.LRU.name())) {
+        if(evictionPolicy.get().equals(EvictionPolicyENUM.LRU.name())) {
             shuffle(keys, 0, offset-1);  //LRU
             return keys[0];
         }
-        else {
+        else if (evictionPolicy.get().equals(EvictionPolicyENUM.MRU.name())) {
             shuffle(keys,offset,keys.length);    //MRU
             return keys[keys.length-1];
+        }
+        else {
+            throw new IllegalStateException("Unsupported Operation");
         }
     }
 
@@ -70,13 +69,12 @@ public class Cache<K,V> extends LinkedHashMap<K,V> {
      * @param key
      * @return
      */
-    public synchronized V getItem (K key) {
+    public V getEntry(K key) {
         return get(key);
     }
 
-
     /**
-     * shuffle the array
+     * shuffle the array (uses knuth-yates fisher algo)
      * @param array
      * @param start
      * @param end
@@ -84,13 +82,20 @@ public class Cache<K,V> extends LinkedHashMap<K,V> {
     public void shuffle(Object[] array, int start, int end) {
         int n = end;
         while (n > start) {
-            //int k = generator.nextInt(n--); //decrements after using the value
             int k = generate(n,start);
             Object temp = array[n];
             array[n] = array[k];
             array[k] = temp;
             n--;
         }
+    }
+
+    public int getMAX_ENTRIES() {
+        return MAX_ENTRIES;
+    }
+
+    public void setMAX_ENTRIES(int MAX_ENTRIES) {
+        this.MAX_ENTRIES = MAX_ENTRIES;
     }
 
     /**
@@ -112,8 +117,6 @@ public class Cache<K,V> extends LinkedHashMap<K,V> {
                     n=temp;
             }
         }
-
         return k;
     }
 }
-

@@ -5,6 +5,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Optional;
+
 public class CacheTest<K,V> {
 
     private Cache<K,V> cache;
@@ -18,7 +20,9 @@ public class CacheTest<K,V> {
     @Before
     public void setUp() {
         cache = new Cache(5,75f);
-        cache.setEvictionPolicy(Cache.EvictionPolicyENUM.LRU.name());
+        Optional<String> policy = Optional.of(Cache.EvictionPolicyENUM.LRU.name());
+        cache.setEvictionPolicy(policy);
+        cache.setMAX_ENTRIES(5);
 
         cacheEntry1 = new CacheEntry();
         cacheEntry2 = new CacheEntry();
@@ -34,8 +38,10 @@ public class CacheTest<K,V> {
         cacheEntry5.key=117;
         cacheEntry6.key=118;
         cacheEntry1.value="Brooklyn";
-        cacheEntry2.value="Alexandria"; cacheEntry3.value="Chantilly";
-        cacheEntry4.value="Fairfax"; cacheEntry5.value="Tysons";
+        cacheEntry2.value="Alexandria";
+        cacheEntry3.value="Chantilly";
+        cacheEntry4.value="Fairfax";
+        cacheEntry5.value="Tysons";
         cacheEntry6.value="Queens";
     }
 
@@ -48,16 +54,6 @@ public class CacheTest<K,V> {
         cacheEntry4=null;
         cacheEntry5=null;
         cacheEntry6=null;
-    }
-
-    @Test
-    public void removeEldestEntry() {
-
-    }
-
-    @Test
-    public void evict() {
-
     }
 
     @Test
@@ -78,15 +74,20 @@ public class CacheTest<K,V> {
     }
 
     @Test
-    public void getItem() {
-        //Assert.assertNotSame(cache.getItem(cacheEntry1.key),null);
+    public void getEntry() {
+        K key  = (K) cacheEntry1.key; V value  = (V) cacheEntry1.value;
+        K key2 = (K) cacheEntry2.key; V value2 = (V) cacheEntry2.value;
+        K key3 = (K) cacheEntry3.key; V value3 = (V) cacheEntry3.value;
+        K key4 = (K) cacheEntry4.key; V value4 = (V) cacheEntry4.value;
+        K key5 = (K) cacheEntry5.key; V value5 = (V) cacheEntry5.value;
+        K key6 = (K) cacheEntry6.key; V value6 = (V) cacheEntry6.value;
+        cache.put(key,value);
+        cache.put(key2,value2);
+        cache.put(key3, value3);
+        cache.put(key4,value4);
+        cache.put(key5,value5);
+        cache.put(key6,value6);
+        Assert.assertSame(cache.getEntry((K) cacheEntry1.key),"Brooklyn");
     }
 
-    @Test
-    public void inPlaceShuffle() {
-    }
-
-    @Test
-    public void generate() {
-    }
 }
