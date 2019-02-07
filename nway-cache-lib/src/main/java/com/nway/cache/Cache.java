@@ -40,13 +40,14 @@ public class Cache<K,V> extends LinkedHashMap<K,V> {
      */
     public K evictPolicy()  {
         K[] keys = (K[]) this.keySet().toArray();
-        int offset = keys.length/2;
+        int pivot = keys.length/2;
+
         if(evictionPolicy.get().equals(EvictionPolicyENUM.LRU.name())) {
-            shuffle(keys, 0, offset-1);  //LRU
+            shuffle(keys, 0, pivot-1);  //LRU
             return keys[0];
         }
         else if (evictionPolicy.get().equals(EvictionPolicyENUM.MRU.name())) {
-            shuffle(keys,offset,keys.length);    //MRU
+            shuffle(keys,pivot,keys.length);    //MRU
             return keys[keys.length-1];
         }
         else {
